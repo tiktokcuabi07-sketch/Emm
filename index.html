@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hộp Quà 8/3 - Từ [Tên bạn]</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div class="scene">
+    <div class="gift-box" id="giftBox">
+      <div class="box-lid">
+        <div class="ribbon"></div>
+      </div>
+      <div class="box-body">
+        <div class="ribbon"></div>
+      </div>
+      <div class="message" id="message">
+        <!-- Nội dung load động từ config.js -->
+      </div>
+    </div>
+  </div>
+
+  <div class="hearts" id="hearts"></div>
+
+  <!-- Audio element cho nhạc Sơn Tùng -->
+  <audio id="backgroundMusic" loop>
+    <source src="assets/music/chung-ta-cua-hien-tai.mp3" type="audio/mpeg">
+    <!-- Nếu không có file local, fallback sang link public (nếu có) -->
+    <!-- <source src="https://example.com/chung-ta-cua-hien-tai.mp3" type="audio/mpeg"> -->
+  </audio>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/effects.js"></script>
+  <script src="scripts/audio.js"></script>
+  <script src="scripts/main.js"></script>
+</body>
+</html>
+https://cdn.jsdelivr.net/npm/canvas
+-confetti@1.9.3/dist/confetti.browser.min.js
+https://example.com/chung-ta-cua-hien-tai.mp3
+config.js
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #0a0015, #1a0000);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.scene {
+  perspective: 1200px;
+  width: 320px;
+  height: 320px;
+  position: relative;
+}
+
+.gift-box {
+  width: 220px;
+  height: 180px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-15deg) rotateY(30deg);
+  cursor: pointer;
+  transition: transform 0.6s ease;
+}
+
+.gift-box:hover {
+  transform: rotateX(-20deg) rotateY(40deg) scale(1.05);
+}
+
+/* ... Giữ nguyên phần còn lại của CSS từ phiên bản trước (box-body, box-lid, ribbon, message, hearts, heart-float, keyframes) ... */
+// config.js - Chỉnh sửa ở đây để tùy chỉnh toàn bộ
+export const CONFIG = {
+  recipientName: "[Tên người nhận]",
+  senderName: "[Tên bạn]",
+  mainMessage: "CHÚC MỪNG 8/3!",
+  subMessage: "Luôn xinh đẹp, mạnh mẽ và được yêu thương thật nhiều ❤️",
+  heartCount: 20,
+  heartTypes: ['❤️', '💖', '💕', '🖤', '🔥'],
+  animationDurationMin: 4,
+  animationDurationMax: 7,
+  confettiColors: ['#ff0000', '#c8102e', '#000000', '#ffd700', '#8b0000'],
+  confettiParticleCount: 150,
+  confettiSpread: 70,
+  confettiStartVelocity: 30,
+  musicEnabled: true,
+  musicVolume: 0.3,
+  songTitle: "Chúng Ta Của Hiện Tại - Sơn Tùng M-TP"
+};
+
+// Load lời chúc động
+document.getElementById('message').innerHTML = `
+  ${CONFIG.mainMessage}<br>
+  ${CONFIG.recipientName} ${CONFIG.subMessage}<br>
+  Từ ${CONFIG.senderName}<br>
+  <small>(Với giai điệu "${CONFIG.songTitle}")</small>
+`;
+// utils.js - Hàm tiện ích chung
+export function getRandomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export function createFloatingElement(container, className, content, options = {}) {
+  const elem = document.createElement('div');
+  elem.className = className;
+  elem.innerHTML = content;
+  elem.style.left = Math.random() * 100 + '%';
+  elem.style.bottom = '0';
+  if (options.duration) elem.style.animationDuration = options.duration + 's';
+  container.appendChild(elem);
+  setTimeout(() => elem.remove(), (options.duration || 6) * 1000 + 1000);
+}
+// effects.js - Confetti + Tim bay
+import { CONFIG } from './config.js';
+import { getRandomItem, createFloatingElement } from './utils.js';
+
+const heartsContainer = document.getElementById('hearts');
+
+export function launchHearts() {
+  for (let i = 0; i < CONFIG.heartCount; i++) {
+    setTimeout(() => {
+      const duration = Math.random() * (CONFIG.animationDurationMax - CONFIG.animationDurationMin) + CONFIG.animationDurationMin;
+      createFloatingElement(
+        heartsContainer,
+        'heart-float',
+        getRandomItem(CONFIG.heartTypes),
+        { duration }
+      );
+    }, i * 120);
+  }
+}
+
+export function launchConfetti() {
+  const end = Date.now() + 3000;
+
+  function frame() {
+    confetti({
+      particleCount: CONFIG.confettiParticleCount / 10,
+      angle: 60 + Math.random() * 60,
+      spread: CONFIG.confettiSpread,
+      startVelocity: CONFIG.confettiStartVelocity,
+      colors: CONFIG.confettiColors,
+      origin: { x: Math.random(), y: -0.1 }
+    });
+
+    confetti({
+      particleCount: CONFIG.confettiParticleCount / 10,
+      angle: 120 - Math.random() * 60,
+      spread: CONFIG.confettiSpread,
+      startVelocity: CONFIG.confettiStartVelocity,
+      colors: CONFIG.confettiColors,
+      origin: { x: Math.random(), y: -0.1 }
+    });
+
+    if (Date.now() < end) requestAnimationFrame(frame);
+  }
+  frame();
+}
+                     // audio.js - Xử lý nhạc nền
+import { CONFIG } from './config.js';
+
+export const music = document.getElementById('backgroundMusic');
+
+export function playMusic() {
+  if (!CONFIG.musicEnabled || !music.paused) return;
+  music.volume = CONFIG.musicVolume;
+  music.play().catch(err => console.log("Autoplay bị chặn: ", err));
+}
+
+export function pauseMusic() {
+  music.pause();
+}
+    
